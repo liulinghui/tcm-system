@@ -1,54 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from datetime import datetime, timedelta
-
-class LunarDate:
-    def __init__(self):
-        self.lunar_info = [
-            0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
-            0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
-            0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
-            0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
-            0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557
-        ]
-
-    def solar_to_lunar(self, date):
-        def get_leap_month(year):
-            return self.lunar_info[year - 1900] & 0xf
-
-        def get_leap_days(year):
-            if get_leap_month(year):
-                return (self.lunar_info[year - 1900] & 0x10000) and 30 or 29
-            return 0
-
-        def get_lunar_days(year, month):
-            return (self.lunar_info[year - 1900] & (0x10000 >> month)) and 30 or 29
-
-        date = datetime.strptime(date_str, '%Y-%m-%d')
-        lunar = LunarDate()
-        year, month, day, is_leap = lunar.solar_to_lunar(date)
-        
-        year_gan = (year - 4) % 10
-        year_zhi = (year - 4) % 12
-        
-        # 月干支计算，需考虑节气
-        month_gan = (year_gan * 2 + month + 1) % 10
-        month_zhi = (month + 2) % 12  # 寅月为正月
-        
-        # 日干支计算
-        base_date = datetime(1900, 1, 31)  # 1900年1月31日为 己卯日
-        days = (date - base_date).days
-        day_gan = (days + 6) % 10  # 从己开始
-        day_zhi = (days + 6) % 12  # 从卯开始
-        
-        return {
-            'lunar_year': year,
-            'lunar_month': month,
-            'lunar_day': day,
-            'is_leap': is_leap,
-            'year_ganzhi': f"{HEAVENLY_STEMS[year_gan]}{EARTHLY_BRANCHES[year_zhi]}",
-            'month_ganzhi': f"{HEAVENLY_STEMS[month_gan]}{EARTHLY_BRANCHES[month_zhi]}",
-            'day_ganzhi': f"{HEAVENLY_STEMS[day_gan]}{EARTHLY_BRANCHES[day_zhi]}"
-        }
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -320,7 +271,7 @@ TREATMENT_MAP = {
         '小肠火': {'加临': '暑邪袭小肠', '用方': '黄连半夏石膏甘草汤'},
         '胃土': {'加临': '暑邪乘胃', '用方': '待补充'},
         '大肠金': {'加临': '暑邪乘大肠', '用方': '百合地黄加牡蛎汤'},
-        '膀胱水': {'加临': '暑邪移膀胱', '用方': '待补充'},
+        '膀胱水': {'加临': '暑邪移大肠', '用方': '甘草干姜茯苓白术汤'},
         '胆木': {'加临': '寒邪乘胆', '用方': '柴胡黄芩芍药半夏甘草汤'}
     }
 }
@@ -331,83 +282,7 @@ def get_treatment_info(evil_qi, disease):
         return TREATMENT_MAP[evil_qi][disease]
     return {'加临': '未知', '用方': '未知'}
 
-def get_prescription_details(prescription_name):
-    """获取处方的详细信息"""
-    return PRESCRIPTION_DETAILS.get(prescription_name, {
-        '处方组成': [],
-        '功效主治': '未知',
-        '条文': {'出处': '未知', '原文': '未知', '注释': '未知'},
-        '禁忌': '未知',
-    })
 
-# 处方详细信息映射表
-PRESCRIPTION_DETAILS = {
-    '小柴胡汤': {   
-        '处方组成': [
-            {'药名': '柴胡', '用量': '8钱',},
-            {'药名': '黄芩', '用量': '3钱',},
-            {'药名': '人参', '用量': '3钱', },
-            {'药名': '炙甘草', '用量': '3钱', },
-            {'药名': '半夏', '用量': '4钱', },
-            {'药名': '生姜', '用量': '3钱', },
-            {'药名': '大枣', '用量': '3枚',}
-        ],
-        '功效主治': '和解少阳，调和肝胃，兼有补气健脾之效',
-        '条文': {
-            '出处': '伤寒杂病论',
-            '原文': '柴胡半斤 黄芩三两 人参三两 半夏半升（洗）甘草三两（炙） 生姜三两（切） 大枣十二枚（擘）右七味，以水一斗二升，煮取六升，去滓，再煎取三升，温服一升，日三服。',
-            '注释': '若胸中烦而不呕，去半夏、人参，加栝蒌实一枚。\n\
-                    若渴，去半夏，加人参，合前成四两半，栝蒌根四两。\n\
-                    若腹中痛者，去黄芩，加芍药三两。\n\
-                    若胁下痞硬，去大枣，加牡蛎四两。\n\
-                    若心下悸，小便不利者，去黄芩，加茯苓四两。\n\
-                    若不渴，外有微热者，去人参，加桂枝三两，温覆微汗愈。\n\
-                    若咳者，去人参、大枣、生姜，加五味子半升，干姜二两。'
-        },
-    },
-
-
-      
-  
-    
-    '黄连黄芩麦冬桔梗甘草汤': {
-        '处方组成': [
-            {'药名': '黄连', '用量': '待补充', '功效': '清心火'},
-            {'药名': '黄芩', '用量': '待补充', '功效': '清上焦热'},
-            {'药名': '麦冬', '用量': '待补充', '功效': '养阴润肺'},
-            {'药名': '桔梗', '用量': '待补充', '功效': '宣肺'},
-            {'药名': '甘草', '用量': '待补充', '功效': '调和诸药'}
-        ],
-        '功效主治': '待补充',
-        '条文': {
-            '出处': '待补充',
-            '原文': '待补充',
-            '注释': '待补充'
-        },
-        '禁忌': '待补充',
-        '用法': '待补充'
-    },
-    
-    '桂枝去桂加茯苓白术汤': {
-        '处方组成': [
-            {'药名': '白芍', '用量': '待补充', '功效': '待补充'},
-            {'药名': '茯苓', '用量': '待补充', '功效': '待补充'},
-            {'药名': '白术', '用量': '待补充', '功效': '待补充'},
-            {'药名': '生姜', '用量': '待补充', '功效': '待补充'},
-            {'药名': '大枣', '用量': '待补充', '功效': '待补充'},
-            {'药名': '甘草', '用量': '待补充', '功效': '待补充'}
-        ],
-        '功效主治': '待补充',
-        '条文': {
-            '出处': '待补充',
-            '原文': '待补充',
-            '注释': '待补充'
-        },
-        '禁忌': '待补充',
-        '用法': '待补充'
-    }
-    # ... 其他处方的详细信息
-}
 
 def calculate_base_ganzhi(year):
     """计算某年1月1日的日干支基数"""
@@ -462,46 +337,11 @@ def get_year_branch(year):
         year_diff += 12
     return EARTHLY_BRANCHES[year_diff]
 
-def get_month_ganzhi(year, month):
-    """计算月份的天干地支"""
-    # 月干 = (年干 × 2 + 月数) % 10
-    year_gan = (year - 4) % 10
-    month_gan = (year_gan * 2 + month) % 10
-    # 寅月为正月
-    month_zhi = (month + 2) % 12
-    return f"{HEAVENLY_STEMS[month_gan]}{EARTHLY_BRANCHES[month_zhi]}"
-
-def get_day_ganzhi(date):
-    """计算日期的天干地支"""
-    base_date = datetime(1900, 1, 31)  # 1900年1月31日为 癸卯日
-    diff_days = (date - base_date).days
-    gan = (diff_days + 40) % 10  # 40是癸的索引位置
-    zhi = (diff_days + 40) % 12
-    return f"{HEAVENLY_STEMS[gan]}{EARTHLY_BRANCHES[zhi]}"
-
-def get_year_ganzhi(year):
-    """计算年份的天干地支"""
-    gan = (year - 4) % 10
-    zhi = (year - 4) % 12
-    return f"{HEAVENLY_STEMS[gan]}{EARTHLY_BRANCHES[zhi]}"
-
-def get_info(birth_date_str, illness_date_str, gender):
+def get_info(birth_year, illness_date, gender):
     """获取主病和行流信息"""
     try:
-        # 计算出生日期的农历和天干地支信息
-        birth_info = get_lunar_date_info(birth_date_str)
-        illness_info = get_lunar_date_info(illness_date_str)
-        
-        # ... 其他代码保持不变 ...
-
-        return {
-            'birth_info': birth_info,
-            'illness_info': illness_info,
-            'disease': disease,
-            'flow': flow,
-            'evil_qi': evil_qi,
-            'treatment': treatment
-        }
+        birth_branch = get_year_branch(birth_year)
+        illness_stem = get_stem_branch(illness_date)
         
         # 根据性别选择对应的主病表
         disease_map = MALE_DISEASE_MAP if gender == 'male' else FEMALE_DISEASE_MAP
@@ -546,8 +386,7 @@ def get_info(birth_date_str, illness_date_str, gender):
             'disease': disease,
             'flow': flow,
             'evil_qi': evil_qi,
-            'treatment': treatment,
-            'ganzhi_info': ganzhi_info  # 添加天干地支信息
+            'treatment': treatment
         }
     except Exception as e:
         print(f"获取信息时出错: {str(e)}")
@@ -585,9 +424,7 @@ def recommend():
             'flow': info['flow'],
             'evil_qi': info['evil_qi'],
             'treatment': info['treatment'],
-            'prescription_details': get_prescription_details(info['treatment']['用方']),
-            'gender': gender,
-            'ganzhi_info': info['ganzhi_info']  # 添加天干地支信息
+            'gender': gender
         }
         
         print("返回结果:", result)
