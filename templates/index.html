@@ -139,7 +139,21 @@
         .result-value {
             font-size: 14px;
             color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: normal;
         }
+
+        .flow-text, .evil-text {
+            font-size: 14px;
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            /* 添加文字换行相关的样式 */
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: normal;
+         }   
 
         .detail-item {
             margin-bottom: 12px;
@@ -158,6 +172,9 @@
             padding: 8px;
             background: #f8f8f8;
             border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: normal;
         }
 
         .two-column {
