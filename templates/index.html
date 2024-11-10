@@ -141,6 +141,52 @@
             color: #333;
         }
 
+        .detail-item {
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            color: #333;
+            line-height: 1.6;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        .result-content {
+            padding: 15px;
+        }
+
+        .detail-item {
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            color: #333;
+            line-height: 1.6;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
         .error {
             color: #dc3545;
             background: #fff5f5;
@@ -251,8 +297,33 @@
                         <div class="result-item">
                             <div class="result-label">用方</div>
                             <div class="result-value" id="prescription">-</div>
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="result-card" id="prescriptionDetails" style="display:none;">
+                <div class="result-card" id="prescriptionDetails" style="display:none;">
+                    <div class="result-title">方剂详情</div>
+                    <div class="result-content">
+                        <div class="detail-item">
+                            <div class="detail-label">药方组成</div>
+                            <div class="detail-value" id="components">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">用法用量</div>
+                            <div class="detail-value" id="usage">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">功效描述</div>
+                            <div class="detail-value" id="description">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">适应证</div>
+                            <div class="detail-value" id="indications">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card" id="prescriptionDetails" style="display:none;">
                     <div class="result-title">方剂详情</div>
                     <div class="result-content">
                         <div class="detail-item">
@@ -311,6 +382,17 @@
                             $('#evilQi').text(response.evil_qi);
                             $('#jialing').text(response.treatment.加临);
                             $('#prescription').text(response.treatment.用方);
+                            
+                            // 更新方剂详情
+                            if (response.prescription_details) {
+                                $('#components').text(response.prescription_details.components.join('、'));
+                                $('#usage').text(response.prescription_details.usage);
+                                $('#description').text(response.prescription_details.description);
+                                $('#indications').text(response.prescription_details.indications);
+                                $('#prescriptionDetails').show();
+                            } else {
+                                $('#prescriptionDetails').hide();
+                            }
                             
                             $('#resultSection').fadeIn();
                         }
