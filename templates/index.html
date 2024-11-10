@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中医诊断系统</title>
+    <title>伤寒钤法系统</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         * {
@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
+            line-height: 1.5;
             color: #333;
             background-color: #f5f5f5;
             min-height: 100vh;
@@ -26,9 +26,9 @@
         }
 
         .input-section {
-            width: 400px;
+            width: 350px;  /* 减小左侧宽度 */
             background: #fff;
-            padding: 40px;
+            padding: 20px;  /* 减小内边距 */
             border-right: 1px solid #eee;
             position: fixed;
             height: 100vh;
@@ -37,58 +37,52 @@
 
         .result-section {
             flex: 1;
-            padding: 40px;
-            margin-left: 400px;
+            padding: 20px;  /* 减小内边距 */
+            margin-left: 350px;  /* 对应左侧宽度 */
             background: #f9f9f9;
         }
 
         .header {
-            margin-bottom: 40px;
+            margin-bottom: 20px;  /* 减小下边距 */
             border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 20px;  /* 减小标题字号 */
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .header p {
             color: #666;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 16px;  /* 减小表单组间距 */
         }
 
         label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         input[type="date"],
         select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;  /* 减小输入框内边距 */
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 13px;
             color: #333;
-        }
-
-        input[type="date"]:focus,
-        select:focus {
-            outline: none;
-            border-color: #666;
         }
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 10px;  /* 减小按钮内边距 */
             background: #333;
             color: white;
             border: none;
@@ -98,34 +92,30 @@
             transition: background 0.3s;
         }
 
-        button:hover {
-            background: #444;
-        }
-
         .result-card {
             background: white;
-            border-radius: 8px;
-            padding: 30px;
-            margin-bottom: 20px;
+            border-radius: 6px;
+            padding: 16px;  /* 减小卡片内边距 */
+            margin-bottom: 16px;  /* 减小卡片间距 */
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .result-title {
-            font-size: 16px;
+            font-size: 15px;
             color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #eee;
         }
 
         .result-group {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            display: flex;
+            flex-direction: column;  /* 改为垂直布局 */
+            gap: 12px;  /* 减小间距 */
         }
 
         .result-item {
-            padding: 15px;
+            padding: 10px;  /* 减小内边距 */
             background: #f8f8f8;
             border-radius: 4px;
         }
@@ -133,68 +123,48 @@
         .result-label {
             font-size: 12px;
             color: #666;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .result-value {
-            font-size: 16px;
+            font-size: 14px;
             color: #333;
         }
 
         .detail-item {
-            margin-bottom: 20px;
-            background: #fff;
-            padding: 15px;
-            border-radius: 4px;
+            margin-bottom: 12px;  /* 减小详情项间距 */
         }
 
         .detail-label {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
-            margin-bottom: 8px;
-            font-weight: 500;
+            margin-bottom: 4px;
         }
 
         .detail-value {
-            font-size: 15px;
+            font-size: 14px;
             color: #333;
-            line-height: 1.6;
-            padding: 10px;
+            line-height: 1.5;
+            padding: 8px;
             background: #f8f8f8;
             border-radius: 4px;
         }
 
-        .result-content {
-            padding: 15px;
-        }
-
-        .detail-item {
-            margin-bottom: 20px;
-        }
-
-        .detail-label {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .detail-value {
-            font-size: 15px;
-            color: #333;
-            line-height: 1.6;
-            padding: 10px;
-            background: #f8f8f8;
-            border-radius: 4px;
+        /* 诊断结果和治疗方案使用两列布局 */
+        .two-column {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
 
         .error {
             color: #dc3545;
             background: #fff5f5;
-            padding: 12px;
+            padding: 10px;
             border-radius: 4px;
-            margin-top: 16px;
+            margin-top: 12px;
             display: none;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         @media (max-width: 768px) {
@@ -205,16 +175,16 @@
             .input-section {
                 width: 100%;
                 position: static;
-                padding: 20px;
+                padding: 16px;
                 height: auto;
             }
 
             .result-section {
                 margin-left: 0;
-                padding: 20px;
+                padding: 16px;
             }
 
-            .result-group {
+            .two-column {
                 grid-template-columns: 1fr;
             }
         }
@@ -224,8 +194,8 @@
     <div class="layout">
         <div class="input-section">
             <div class="header">
-                <h1>中医诊断系统</h1>
-                <p>基于天干地支理论的辩证分析</p>
+                <h1>伤寒钤法系统</h1>
+                <p>基于五运六气理论的个性化诊断</p>
             </div>
             
             <form id="diagnosisForm">
@@ -271,7 +241,7 @@
 
                 <div class="result-card">
                     <div class="result-title">诊断结果</div>
-                    <div class="result-group">
+                    <div class="two-column">
                         <div class="result-item">
                             <div class="result-label">主病</div>
                             <div class="result-value" id="disease">-</div>
@@ -284,16 +254,17 @@
                             <div class="result-label">邪气</div>
                             <div class="result-value" id="evilQi">-</div>
                         </div>
+                        <div class="result-item">
+                            <div class="result-label">加临</div>
+                            <div class="result-value" id="jialing">-</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="result-card">
                     <div class="result-title">治疗方案</div>
-                    <div class="result-group">
-                        <div class="result-item">
-                            <div class="result-label">加临</div>
-                            <div class="result-value" id="jialing">-</div>
-                        </div>
+                    <div class="two-column">
+                       
                         <div class="result-item">
                             <div class="result-label">用方</div>
                             <div class="result-value" id="prescription">-</div>
@@ -322,33 +293,12 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="result-card" id="prescriptionDetails" style="display:none;">
-                    <div class="result-title">方剂详情</div>
-                    <div class="result-content">
-                        <div class="detail-item">
-                            <div class="detail-label">药方组成</di  v>
-                            <div class="detail-value" id="components">-</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">用法</div>
-                            <div class="detail-value" id="usage">-</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">功效描述</div>
-                            <div class="detail-value" id="description">-</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">相关条文</div>
-                            <div class="detail-value" id="indications">-</div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // 保持原有的 JavaScript 代码不变
         $(document).ready(function() {
             $('#diagnosisForm').on('submit', function(e) {
                 e.preventDefault();
@@ -383,7 +333,6 @@
                             $('#jialing').text(response.treatment.加临);
                             $('#prescription').text(response.treatment.用方);
                             
-                            // 更新方剂详情
                             if (response.prescription_details) {
                                 $('#components').text(response.prescription_details.components.join('、'));
                                 $('#usage').text(response.prescription_details.usage);
