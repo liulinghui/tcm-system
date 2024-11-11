@@ -10,6 +10,12 @@ from config.data import (
     TREATMENT_MAP
 )
 from config.prescriptions import PRESCRIPTION_DETAILS
+from utils.date_utils import (
+    validate_date,
+    get_year_ganzhi,
+    get_year_branch,
+    is_after_lichun
+)
 
 app = Flask(__name__)
 
@@ -58,26 +64,16 @@ def get_stem_branch(date):
     
     return HEAVENLY_STEMS[stem_index]
 
-def get_year_branch(year):
-    """获取年份对应的地支"""
-    base_year = 1984  # 1984年是子年
-    year_diff = (year - base_year) % 12
-    if year_diff < 0:
-        year_diff += 12
-    return EARTHLY_BRANCHES[year_diff]
-
 def get_treatment_info(evil_qi, disease):
     """获取治疗方案信息"""
     treatments = []
     
-    # 如果evil_qi是列表或元组（多个邪气类型）
     if isinstance(evil_qi, (list, tuple)):
         for qi in evil_qi:
             if qi in TREATMENT_MAP and disease in TREATMENT_MAP[qi]:
                 treatments.append(TREATMENT_MAP[qi][disease])
             else:
                 treatments.append({'加临': '未知', '用方': '未知'})
-    # 如果是单个邪气类型
     else:
         if evil_qi in TREATMENT_MAP and disease in TREATMENT_MAP[evil_qi]:
             treatments.append(TREATMENT_MAP[evil_qi][disease])
@@ -100,20 +96,20 @@ def get_prescription_details(treatments):
         prescription_details_list.append(details)
     return prescription_details_list
 
-def get_info(birth_year, illness_date, gender):
+def get_info(birth_year, illness_date, gender, birth_date):
     """获取主病和行流信息"""
     try:
-        birth_branch = get_year_branch(birth_year)
+        validate_date(birth_date)
+        validate_date(illness_date)
+        
+        birth_branch = get_year_branch(birth_year, birth_date)
         illness_stem = get_stem_branch(illness_date)
         
-        # 根据性别选择对应的主病表
         disease_map = MALE_DISEASE_MAP if gender == 'male' else FEMALE_DISEASE_MAP
         
-        # 获取主病和行流信息
         disease = disease_map.get(birth_branch, {}).get(illness_stem, "未知")
         flow = FLOW_MAP.get(birth_branch, {}).get(illness_stem, "未知")
         
-        # 确定邪气类型
         evil_qi = None
         if '木' in flow:
             evil_qi = '风邪'
@@ -125,11 +121,7 @@ def get_info(birth_year, illness_date, gender):
             evil_qi = '燥邪'
         elif '水' in flow:
             evil_qi = '寒邪'
-
-        # 获取治疗方案
         treatments = get_treatment_info(evil_qi, disease)
-        
-        # 获取方剂详情列表
         prescription_details_list = get_prescription_details(treatments)
 
         # 添加调试信息
@@ -186,11 +178,16 @@ def recommend():
         illness_date = datetime.strptime(data['illnessDate'], '%Y-%m-%d')
         gender = data['gender']
         
-        info = get_info(birth_date.year, illness_date, gender)
+        # 传入完整的出生日期
+        info = get_info(birth_date.year, illness_date, gender, birth_date)
+        
+        # 获取年干支
+        year_ganzhi = get_year_ganzhi(birth_date)
         
         result = {
             'birth_year': birth_date.year,
             'birth_branch': info['birth_branch'],
+            'year_ganzhi': year_ganzhi,  # 添加年干支信息
             'illness_date': data['illnessDate'],
             'illness_stem': info['illness_stem'],
             'disease': info['disease'],
@@ -209,3 +206,4 @@ def recommend():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
